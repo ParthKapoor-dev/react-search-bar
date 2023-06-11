@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import "./style.css";
 
 const OriginaldataArray = [
@@ -9,42 +9,66 @@ const OriginaldataArray = [
   { category: "Vegetables", price: "$4", stocked: false, name: "Pumpkin" },
   { category: "Vegetables", price: "$1", stocked: true, name: "Peas" }
 ]
+// const seconddataArray=[
+//   { category: "Fruits", price: "$1", stocked: true, name: "Apple" },
+//   { category: "Fruits", price: "$1", stocked: true, name: "Dragonfruit" },
+//   { category: "Vegetables", price: "$2", stocked: true, name: "Spinach" },
+//   { category: "Vegetables", price: "$1", stocked: true, name: "Peas" }
+// ]
+
 
 export default function App(){
   const [dataArray,setdataArray] = useState(OriginaldataArray);
+  const [stocked,setstocked] = useState(false);
 
-    function searchBarFunction(){
+      function searchBarFunction(valueOfStocked){
       let inputBtn = document.querySelector('.input-btn');
-      let jassos = 0;
       let newArray=[];
-      OriginaldataArray.forEach(originalData=>{
-        if(originalData.name==inputBtn.value) {
-          newArray.push(originalData);
-          jassos = 1;
-        }
-      });
 
-      if(jassos==0) setdataArray(OriginaldataArray);
-      if(jassos==1) setdataArray(newArray);    
+      OriginaldataArray.forEach(originalData=>{
+
+        let Name = originalData.name.split('');
+        let value = inputBtn.value.split('');
+          if(value.every(ValueLetter=>{
+            return(Name.some(NameLetter=>(NameLetter.toLowerCase()==ValueLetter.toLowerCase())))
+          })) {
+            if(valueOfStocked && !originalData.stocked) return
+            else newArray.push(originalData);
+          }                       
+      });
+      setdataArray(newArray);
+
+    }
+    function checkboxChanged(check){
+      setstocked(check);
+      if(!stocked){
+        let newArray=[];
+        dataArray.forEach(Data=>{
+          if(Data.stocked) newArray.push(Data)
+        });
+        setdataArray(newArray);
+      }else{
+        searchBarFunction(false);
+      }
+      
     }
 
   return(
     <div className="main-container">
-      <SearchBar searchBarFunction={searchBarFunction}/>
+      <SearchBar searchBarFunction={searchBarFunction} stockedfunc={checkboxChanged} stocked={stocked}/>
       <ProductTable dataArray={dataArray}/>
     </div>
   )
 
 }
 
-function SearchBar({searchBarFunction}){
+function SearchBar({searchBarFunction,stockedfunc , stocked}){
 
-  
   
   return (
     <form className="searchbar-form">
-      <input type="text" className="input-btn" placeholder="search..." onChange={searchBarFunction}/> <br />
-      <input type="checkbox" id="searchBar-checkbox" /> 
+      <input type="text" className="input-btn" placeholder="search..." onChange={()=>searchBarFunction(stocked)}/> <br />
+      <input type="checkbox" id="searchBar-checkbox"  onChange={(e)=>stockedfunc(e.target.checked)}/> 
       <label htmlFor="searchBar-checkbox">Only show products in stock</label>
     </form>
   )
