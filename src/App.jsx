@@ -1,4 +1,4 @@
-import { useState , useEffect} from "react";
+import { useState } from "react";
 import "./style.css";
 
 const OriginaldataArray = [
@@ -9,66 +9,55 @@ const OriginaldataArray = [
   { category: "Vegetables", price: "$4", stocked: false, name: "Pumpkin" },
   { category: "Vegetables", price: "$1", stocked: true, name: "Peas" }
 ]
-// const seconddataArray=[
-//   { category: "Fruits", price: "$1", stocked: true, name: "Apple" },
-//   { category: "Fruits", price: "$1", stocked: true, name: "Dragonfruit" },
-//   { category: "Vegetables", price: "$2", stocked: true, name: "Spinach" },
-//   { category: "Vegetables", price: "$1", stocked: true, name: "Peas" }
-// ]
 
 
 export default function App(){
   const [dataArray,setdataArray] = useState(OriginaldataArray);
   const [stocked,setstocked] = useState(false);
 
-      function searchBarFunction(valueOfStocked){
-      let inputBtn = document.querySelector('.input-btn');
-      let newArray=[];
-
-      OriginaldataArray.forEach(originalData=>{
-
-        let Name = originalData.name.split('');
-        let value = inputBtn.value.split('');
-          if(value.every(ValueLetter=>{
-            return(Name.some(NameLetter=>(NameLetter.toLowerCase()==ValueLetter.toLowerCase())))
-          })) {
-            if(valueOfStocked && !originalData.stocked) return
-            else newArray.push(originalData);
-          }                       
-      });
+    function handleSearch(isStocked){
+      const value = document.querySelector('.input-btn').value.toLowerCase();
+      const newArray = OriginaldataArray.filter(data=>
+        data.name.toLowerCase().includes(value) && (!isStocked || data.stocked ) );
       setdataArray(newArray);
+    }
 
-    }
-    function checkboxChanged(check){
+    function handleCheckboxChanged(check){
       setstocked(check);
-      if(!stocked){
-        let newArray=[];
-        dataArray.forEach(Data=>{
-          if(Data.stocked) newArray.push(Data)
-        });
+      if(check){
+        const newArray = dataArray.filter(data=>data.stocked);
         setdataArray(newArray);
-      }else{
-        searchBarFunction(false);
       }
-      
+      else{
+        handleSearch(false)
+      }
     }
+      
 
   return(
     <div className="main-container">
-      <SearchBar searchBarFunction={searchBarFunction} stockedfunc={checkboxChanged} stocked={stocked}/>
+      <SearchBar searchBarFunction={handleSearch} checkboxFunction={handleCheckboxChanged} stocked={stocked}/>
       <ProductTable dataArray={dataArray}/>
     </div>
   )
 
 }
 
-function SearchBar({searchBarFunction,stockedfunc , stocked}){
+function SearchBar({searchBarFunction, checkboxFunction , stocked}){
 
+    function handleInputChange(){
+      searchBarFunction(stocked);
+    }
+
+    function handleCheckboxChange(event){
+      const check = event.target.checked;
+      checkboxFunction(check);
+    }
   
   return (
     <form className="searchbar-form">
-      <input type="text" className="input-btn" placeholder="search..." onChange={()=>searchBarFunction(stocked)}/> <br />
-      <input type="checkbox" id="searchBar-checkbox"  onChange={(e)=>stockedfunc(e.target.checked)}/> 
+      <input type="text" className="input-btn" placeholder="search..." onChange={handleInputChange}/> <br />
+      <input type="checkbox" id="searchBar-checkbox"  onChange={handleCheckboxChange}/> 
       <label htmlFor="searchBar-checkbox">Only show products in stock</label>
     </form>
   )
